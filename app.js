@@ -6,9 +6,11 @@ require('dotenv/config')
 
 const bodyParser = require('body-parser')
 const snacksRoute = require('./routes/snacks')
+const authRoute = require('./routes/auth')
 
 app.use(bodyParser.json())
-app.use('/snacks', snacksRoute)
+app.use('/api/snacks', snacksRoute)
+app.use('/api/user', authRoute)
 
 app.get('/', (req, res)=>{
     res.send('Homepage')
