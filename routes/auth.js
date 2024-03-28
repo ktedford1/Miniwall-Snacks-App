@@ -15,11 +15,17 @@ router.post('/register', async(req, res)=>{
         return res.status(400).send({message:error['details'][0]['message']})
     }
 
-    // Validation #2: check if user already exists
+    // Validation #2: check if user already exists by email
     const userExists = await User.findOne({email:req.body.email})
     if (userExists) {
         return res.status(400).send({message: 'User already exists! Try again'})
     }
+
+    // Validation #3: check if user already exists by username
+    const userExists2 = await User.findOne({username:req.body.username})
+    if (userExists2) {
+        return res.status(400).send({message: 'That username is taken - try again'})
+    }    
 
     // create a hashed version of the password
     const salt = await bcryptjs.genSalt(5)
@@ -61,7 +67,7 @@ router.post('/login', async(req, res)=>{
     }
 
     // If everything is correct, generate an auth token
-    const token = jsonwebtoken.sign({_id:user._id}, process.env.TOKEN_SECRET)
+    const token = jsonwebtoken.sign({_id:user._id, username:user.username}, process.env.TOKEN_SECRET)
     res.header('auth-token', token).send({'auth-token':token})
 
 })

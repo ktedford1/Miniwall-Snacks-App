@@ -7,8 +7,10 @@ const verifyToken = require('../verifyToken')
 // use POST to create an new entry in the 'snacks' collection
 router.post('/', verifyToken, async(req, res)=>{
 
+    // get the user Id and get the username for every snack post
     const snackData = new Snack({
-        owner:req.body.owner,
+        owner:req.user._id,
+        username:req.user.username,
         title:req.body.title,
         description:req.body.description
     })
@@ -60,6 +62,7 @@ router.patch('/:snackId', verifyToken, async (req, res)=>{
 // use DELETE and '/snacks/<id number>' to delete a specific snack record
 router.delete('/:snackId', verifyToken, async (req, res)=>{
     try{
+        // check if the user_id is same person as the 'username' who posted the snack??
         const deleteSnackById = await Snack.deleteOne({_id:req.params.snackId})
         res.send(deleteSnackById)
     } catch(err) {
