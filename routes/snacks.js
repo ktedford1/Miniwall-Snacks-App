@@ -25,7 +25,7 @@ router.post('/', verifyToken, async(req, res)=>{
 // use GET and '/snacks' to retrieve all the snack records from the 'snacks' collection
 router.get('/', verifyToken, async (req, res)=>{
     try {
-        const snacks = await Snack.find()  // limit to a certain number?
+        const snacks = await Snack.find()  // .limit(5) or whatever number
         res.send(snacks)
     } catch(err) {
         res.send({message:err})
@@ -35,7 +35,7 @@ router.get('/', verifyToken, async (req, res)=>{
 // use GET and '/snacks/<id number>' to retrieve a specific snack record
 router.get('/:snackId', verifyToken, async (req, res)=>{
     try {
-        const snackById = await Snack.findById(req.params.snackId)  // .limit(5) or whatever number
+        const snackById = await Snack.findById(req.params.snackId) 
         res.send(snackById)
     } catch(err) {
         res.send({message:err})
@@ -45,6 +45,12 @@ router.get('/:snackId', verifyToken, async (req, res)=>{
 // use PATCH and '/snacks/<id number>' to modify a specific snack record
 router.patch('/:snackId', verifyToken, async (req, res)=>{
     try{
+        // check if the user_id is same person as the 'username' who posted the snack
+        const snack2patch = await Snack.findById(req.params.snackId)  
+        
+        if (snack2patch.owner.toString() !== req.user._id.toString()) {
+            return res.status(401).send({message:"Access denied: only the registered owner can edit this post."})
+        }        
         const updateSnackById = await Snack.updateOne (
             {_id:req.params.snackId},
             {$set:{
@@ -62,7 +68,12 @@ router.patch('/:snackId', verifyToken, async (req, res)=>{
 // use DELETE and '/snacks/<id number>' to delete a specific snack record
 router.delete('/:snackId', verifyToken, async (req, res)=>{
     try{
-        // check if the user_id is same person as the 'username' who posted the snack??
+        // check if the user_id is same person as the 'username' who posted the snack
+        const snack2delete = await Snack.findById(req.params.snackId)  
+        
+        if (snack2delete.owner.toString() !== req.user._id.toString()) {
+            return res.status(401).send({message:"Access denied: only registered owner can delete this post."})
+        }
         const deleteSnackById = await Snack.deleteOne({_id:req.params.snackId})
         res.send(deleteSnackById)
     } catch(err) {
