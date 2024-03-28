@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 
 const SnackSchema = mongoose.Schema({
     owner:{
+        // unique userId assigned by MongoDB; user does not have to fill this in
         type:String,
         required:true
     },
@@ -20,7 +21,31 @@ const SnackSchema = mongoose.Schema({
     date:{
         type:Date,
         default:Date.now
-    }
+    },
+    likes: [{
+        userId:{
+            type:String,
+            required:true
+        },
+        date:{
+            type:Date,
+            default:Date.now
+        }
+    }],
+    comments: [{
+        userId:{
+            type:String,
+            required:true
+        },
+        date:{
+            type:Date,
+            default:Date.now
+        },
+        comment:{
+            type:String,
+            required:true
+        }
+    }]
 })
 
 module.exports = mongoose.model('snacks', SnackSchema)

@@ -81,4 +81,15 @@ router.delete('/:snackId', verifyToken, async (req, res)=>{
     }
 })
 
+// user can add a 'LIKE' to a post
+// only users with id different from the post owner allowed to do this
+// this is a variation of 'PATCH' - select post by snackId, push a 'LIKE' to the 'LIKE' array
+// record the user_Id and the date
+
+
+// user can add a 'comment' to a post
+// only users with id different from the post owner allowed to do this
+// this is a variation of 'PATCH' - select post by snackId, push a 'comment' to the 'comment' array
+// record the user_Id and the date and the comment
+
 module.exports = router
