@@ -81,15 +81,61 @@ router.delete('/:snackId', verifyToken, async (req, res)=>{
     }
 })
 
-// user can add a 'LIKE' to a post
-// only users with id different from the post owner allowed to do this
-// this is a variation of 'PATCH' - select post by snackId, push a 'LIKE' to the 'LIKE' array
-// record the user_Id and the date
+// LIKES: use PATCH and '/snacks/<id number>/like' to add a 'LIKE' to a specific snack record
+// add auth-token to header; nothing is required in the body
+
+router.patch('/:snackId/like', verifyToken, async (req, res)=>{
+    try{
+        const snack2like = await Snack.findById(req.params.snackId)
+
+        // check if the user_id is NOT!! the same person as the 'username' who posted the snack  
+        if (snack2like.owner.toString() == req.user._id.toString()) {
+            return res.status(401).send({message:"Access denied: you can't 'like' your own posts"})
+        } 
+        
+        // check if the user_id has already liked the post
 
 
-// user can add a 'comment' to a post
-// only users with id different from the post owner allowed to do this
-// this is a variation of 'PATCH' - select post by snackId, push a 'comment' to the 'comment' array
-// record the user_Id and the date and the comment
+        // add a like to the likes array
+        const updateSnackLike = await Snack.updateOne (
+            {_id:req.params.snackId},
+            {$push:{
+                likes:{userId:req.user._id, date:new Date() }           
+                }
+            })
+        res.send({message:"You liked this post!"})
+    } catch(err) {
+        res.send({message:err})
+    }
+})
+
+
+// COMMENTS: use PATCH and '/snacks/<id number>/comment' to add a 'comment' to a specific snack record
+// add auth-token to header; 
+
+router.patch('/:snackId/comment', verifyToken, async (req, res)=>{
+    try{
+        const snack2comment = await Snack.findById(req.params.snackId)
+
+        // check if the user_id is NOT!! the same person as the 'username' who posted the snack  
+        if (snack2comment.owner.toString() == req.user._id.toString()) {
+            return res.status(401).send({message:"Access denied: you can't 'comment' on your own posts!"})
+        } 
+        
+        // check if the user_id has already commented the post
+
+
+        // add a comment to the comments array
+        const updateSnackComment = await Snack.updateOne (
+            {_id:req.params.snackId},
+            {$push:{
+                comments:{userId:req.user._id, date:new Date(), comment:req.body.comment }           
+                }
+            })
+        res.send({updateSnackComment})
+    } catch(err) {
+        res.send({message:err})
+    }
+})
 
 module.exports = router
