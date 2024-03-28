@@ -93,8 +93,21 @@ router.patch('/:snackId/like', verifyToken, async (req, res)=>{
             return res.status(401).send({message:"Access denied: you can't 'like' your own posts"})
         } 
         
-        // check if the user_id has already liked the post
 
+        // check if the user_id has already liked the post
+        let alreadyLiked = false;
+
+        for (let i = 0; i < snack2like.likes.length; i++) {
+            if (snack2like.likes[i].userId.toString() == req.user._id.toString()) {
+                alreadyLiked = true;
+                break;
+            }
+        }
+
+        if (alreadyLiked) {
+            return res.status(400).send({message:"You already liked this post - you can't like twice"})
+        }
+        
 
         // add a like to the likes array
         const updateSnackLike = await Snack.updateOne (
@@ -123,7 +136,7 @@ router.patch('/:snackId/comment', verifyToken, async (req, res)=>{
         } 
         
         // check if the user_id has already commented the post
-
+        // nah - it's okkay - multiple comments allowed
 
         // add a comment to the comments array
         const updateSnackComment = await Snack.updateOne (
