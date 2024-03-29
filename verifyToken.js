@@ -1,3 +1,5 @@
+// code source: CSM-030, Lab 4, Part 1: MiniFilm REST Verification and Authentication
+
 const { send } = require('express/lib/response')
 const jsonwebtoken = require('jsonwebtoken')
 

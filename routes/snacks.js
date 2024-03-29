@@ -1,13 +1,23 @@
+// code based on: CSM-030, Lab 3, Part 1: Building the MiniPost REST microservice
+
 const express = require('express')
 const router = express.Router()
 
 const Snack = require('../models/Snack')
+const {snackpostValidation} = require('../validations/validation')
 const verifyToken = require('../verifyToken')
 
 // use POST to create an new entry in the 'snacks' collection
 router.post('/', verifyToken, async(req, res)=>{
 
-    // get the user Id and get the username for every snack post
+    // Validation #1: check user input
+    const {error} = snackpostValidation(req.body)
+    if (error) {
+        return res.status(400).send({message:error['details'][0]['message']})
+    }
+
+    // automatically add the userId and the username of the user to every snack post..
+    // ..but the user should add the title and description
     const snackData = new Snack({
         owner:req.user._id,
         username:req.user.username,
@@ -25,10 +35,14 @@ router.post('/', verifyToken, async(req, res)=>{
 // use GET and '/snacks' to retrieve all the snack records from the 'snacks' collection
 router.get('/', verifyToken, async (req, res)=>{
     try {
-        const snacks = await Snack.find()  // .limit(5) or whatever number
+        // sort the 'snacks' collection first on total number of likes (descending) and second on the post date (descending)
+        const snacks = await Snack.aggregate ([
+            { $addFields: { likesCount: { $size: "$likes" } } },
+            { $sort: { likesCount: -1, date: -1} }
+        ])                                                  // .limit(x) to limit the returned list to 'x' snack posts
         res.send(snacks)
     } catch(err) {
-        res.send({message:err})
+        res.status(500).send({message:"ordering didn't work"})
     }
 })
 
@@ -135,8 +149,11 @@ router.patch('/:snackId/comment', verifyToken, async (req, res)=>{
             return res.status(401).send({message:"Access denied: you can't 'comment' on your own posts!"})
         } 
         
-        // check if the user_id has already commented the post
-        // nah - it's okkay - multiple comments allowed
+        // check that the comment contains text and is not too long:
+        const commentText = req.body.comment;
+        if (!commentText || commentText.trim().length < 1) {
+            return res.status(400).send({message:"You forgot to write a comment!"})
+        }
 
         // add a comment to the comments array
         const updateSnackComment = await Snack.updateOne (

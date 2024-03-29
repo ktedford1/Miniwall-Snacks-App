@@ -1,3 +1,5 @@
+// code source: CSM-030, Lab 3, Part 1: Building the MiniPost REST microservice
+
 const express = require('express')
 const app = express()
 
